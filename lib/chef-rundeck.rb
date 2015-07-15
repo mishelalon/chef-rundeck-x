@@ -75,7 +75,26 @@ class ChefRundeck < Sinatra::Base
           at_exit { File.delete(cache_file) if File.exist?(cache_file) }
         end
       end
-      
+
+      @@node_cache = []
+
+      get '/search.json' do
+        content_type 'text/json'
+        if params['q'].nil? 
+          status 400
+          return 
+        end
+
+        if @@node_cache.length == 0
+          Chef::Log.info("Loading all nodes")
+          @@node_cache = partial_search(:node, "*:*", :keys => { 'name' => ['name'] } )
+          Chef::Log.info("Done loading all nodes")
+        end
+
+        status 200
+        return @@node_cache.map{ |n| n['name'] }.select { |n| Regexp.new(params['q']) =~ n }.to_json
+      end
+
       get '/' do
         content_type 'text/xml'
         Chef::Log.info("Loading all nodes for /")
