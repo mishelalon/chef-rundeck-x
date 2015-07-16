@@ -79,7 +79,7 @@ class ChefRundeck < Sinatra::Base
       @@node_cache = []
 
       get '/search.json' do
-        content_type 'text/json'
+        content_type 'application/json'
         if params['q'].nil? 
           status 400
           return 
