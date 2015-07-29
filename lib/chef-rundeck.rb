@@ -24,6 +24,7 @@ require 'chef/environment'
 require 'chef/data_bag'
 require 'chef/data_bag_item'
 require 'partial_search'
+require 'set'
 
 REQUIRED_ATTRS = [ :kernel, :fqdn, :platform, :platform_version ]
 
@@ -31,6 +32,36 @@ class MissingAttribute < StandardError
   attr_reader :name
   def initialize(name)
     @name = name
+  end
+end
+
+class Node < Hash
+  def initialize
+    super 
+  end
+
+  def =~(other_hash)
+    alike = true
+    other_hash.each do |k,v|
+      if (Regexp.new(v) =~ (fetch k)).nil?
+        alike = false
+        break
+      end
+    end
+
+    alike 
+  end
+
+  def update(other_hash)
+    if other_hash.has_key? 'roles'
+      other_hash['roles'] = other_hash['roles'].join(',')
+    end
+
+    if other_hash.has_key? 'tags'
+      other_hash['tags'] = other_hash['tags'].join(',')
+    end
+
+    super other_hash
   end
 end
 
@@ -78,21 +109,31 @@ class ChefRundeck < Sinatra::Base
 
       @@node_cache = []
 
-      get '/search.json' do
-        content_type 'application/json'
-        if params['q'].nil? 
+      get '/nodes.json' do
+        if ! Set.new(params.keys).subset? Set.new(['name', 'chef_environment', 'roles', 'tags'])
           status 400
           return 
         end
 
         if @@node_cache.length == 0
+          keys = {  
+                    'name' => ['name'],
+                    'chef_environment' => [ 'chef_environment' ],
+                    'fqdn' => [ 'fqdn' ],
+                    'roles' => [ 'roles' ],
+                    'tags' => [ 'tags' ]
+                 }  
+
           Chef::Log.info("Loading all nodes")
-          @@node_cache = partial_search(:node, "*:*", :keys => { 'name' => ['name'] } )
+          @@node_cache = partial_search(:node, "*:*", :keys => keys )
+          @@node_cache = @@node_cache.map { |n| Node.new().update(n) } 
           Chef::Log.info("Done loading all nodes")
         end
 
+        content_type 'application/json'
         status 200
-        return @@node_cache.map{ |n| n['name'] }.select { |n| Regexp.new(params['q']) =~ n }.to_json
+
+        return @@node_cache.select{ |node| node =~ params }.map{ |n| n['name'] }.to_json
       end
 
       get '/' do
