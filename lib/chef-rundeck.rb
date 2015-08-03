@@ -43,9 +43,18 @@ class Node < Hash
   def =~(other_hash)
     alike = true
     other_hash.each do |k,v|
-      if (Regexp.new(v) =~ (fetch k)).nil?
-        alike = false
-        break
+      filter = v.split(",")
+      if filter.class == Array
+        value = fetch k
+        alike = filter.select{ |f| Regexp.new(f) =~ value }.length == 1
+        if ! alike
+          break
+        end
+      else
+        if (Regexp.new(v) =~ (fetch k)).nil?
+          alike = false
+          break
+        end
       end
     end
 

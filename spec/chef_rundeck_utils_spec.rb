@@ -17,7 +17,7 @@ describe Node  do
   it 'can be compared to a hash' do
     n = Node.new()
     n.update({
-      'name' => 'server.example.com', 
+      'name' => 'server.example.com',
       'chef_environment' => 'development',
       'roles' => [ 'role1', 'role2' ]
       })
@@ -26,6 +26,17 @@ describe Node  do
     expect(n =~ { 'name' => 'server.example' }).to eq(true)
     expect(n =~ { 'name' => 'some_server.example' }).to eq(false)
     expect(n =~ { 'roles' => 'role1' }).to eq(true)
+  end
+
+  it 'hash param has multiple values' do
+    n = Node.new()
+    n.update({
+      'name' => 'server.example.com',
+      'chef_environment' => 'development',
+      'roles' => [ 'role1', 'role2' ]
+      })
+
+    expect(n =~ { 'chef_environment' => 'development,staging'}).to eq(true)
   end
 end
 
