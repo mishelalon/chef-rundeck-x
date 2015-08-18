@@ -166,39 +166,31 @@ class ChefRundeck < Sinatra::Base
       end
 
       results = []
-      if ChefRundeck.partial_search then
-        keys = { 'name' => ['name'],
-                 'kernel_machine' => [ 'kernel', 'machine' ],
-                 'kernel_os' => [ 'kernel', 'os' ],
-                 'fqdn' => [ 'fqdn' ],
-                 'run_list' => [ 'run_list' ],
-                 'roles' => [ 'roles' ],
-                 'recipes' => [ 'recipes' ],
-                 'chef_environment' => [ 'chef_environment' ],
-                 'platform' => [ 'platform'],
-                 'platform_version' => [ 'platform_version' ],
-                 'tags' => [ 'tags' ],
-                 'hostname' => [hostname]
-               }  
-        if !custom_attributes.nil? then
-          custom_attributes.each do |attr|
-          attr_name = attr.gsub('.', '_')
-          attr_value = attr.split('.')
-          keys[attr_name] = attr_value
-          end
+      keys = { 'name' => ['name'],
+               'kernel_machine' => [ 'kernel', 'machine' ],
+               'kernel_os' => [ 'kernel', 'os' ],
+               'fqdn' => [ 'fqdn' ],
+               'run_list' => [ 'run_list' ],
+               'roles' => [ 'roles' ],
+               'recipes' => [ 'recipes' ],
+               'chef_environment' => [ 'chef_environment' ],
+               'platform' => [ 'platform'],
+               'platform_version' => [ 'platform_version' ],
+               'tags' => [ 'tags' ],
+               'hostname' => [hostname]
+             }  
+      if !custom_attributes.nil? then
+        custom_attributes.each do |attr|
+        attr_name = attr.gsub('.', '_')
+        attr_value = attr.split('.')
+        keys[attr_name] = attr_value
         end
-        # do search
-        Chef::Log.info("partial search started (project: '#{project}')")
-        results = partial_search(:node,pattern, :keys => keys)
-        Chef::Log.info("partial search finshed (project: '#{project}', count: #{results.length})")
-      else 
-        q = Chef::Search::Query.new
-        Chef::Log.info("search started (project: '#{project}')")
-        results = q.search("node",pattern)[0]
-        Chef::Log.info("search finshed (project: '#{project}', count: #{results.length})")
-        results = convert_results(results, hostname, custom_attributes)
       end
-      
+      # do search
+      Chef::Log.info("partial search started (project: '#{project}')")
+      results = partial_search(:node,pattern, :keys => keys)
+      Chef::Log.info("partial search finshed (project: '#{project}', count: #{results.length})")
+     
       response = File.open("#{Dir.tmpdir}/chef-rundeck-#{project}.xml", 'w')
       response.write '<?xml version="1.0" encoding="UTF-8"?>'
       response.write '<!DOCTYPE project PUBLIC "-//DTO Labs Inc.//DTD Resources Document 1.0//EN" "project.dtd">'
