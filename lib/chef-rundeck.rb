@@ -136,6 +136,8 @@ class ChefRundeck < Sinatra::Base
           Chef::Log.info("Loading all nodes")
           @@node_cache = partial_search(:node, "*:*", :keys => keys )
           @@node_cache = @@node_cache.map { |n| Node.new().update(n) } 
+
+          Chef::Log.info("nodes complete (project: 'default', total: #{@@node_cache.length}, failed: N/A")
           Chef::Log.info("Done loading all nodes")
         end
 
