@@ -85,7 +85,6 @@ class ChefRundeck < Sinatra::Base
     attr_accessor :api_url
     attr_accessor :client_key
     attr_accessor :project_config
-    attr_accessor :cache_timeout
     attr_accessor :partial_search
 
     def configure
@@ -147,10 +146,16 @@ class ChefRundeck < Sinatra::Base
         return @@node_cache.select{ |node| node =~ params }.map{ |n| n['name'] }.to_json
       end
 
-      get '/' do
+      get '/nodes.xml' do
         content_type 'text/xml'
         Chef::Log.info("Loading all nodes for /")
-        send_file build_project
+        
+        if (File.exists?("#{Dir.tmpdir}/chef-rundeck-default.xml") && (params['refresh'].nil? || params['refresh'] == "false")) then
+          Chef::Log.info("Loading from cache")
+          send_file "#{Dir.tmpdir}/chef-rundeck-default.xml"
+        else
+          send_file build_project
+        end
       end
       
       cache_file = "#{Dir.tmpdir}/chef-rundeck-default.xml"
@@ -161,11 +166,6 @@ class ChefRundeck < Sinatra::Base
   def build_project (project="default", pattern="*:*", username=ChefRundeck.username, hostname="fqdn", custom_attributes=nil)
     response = nil
     begin
-
-      # file is too new use it again
-      if (File.exists?("#{Dir.tmpdir}/chef-rundeck-#{project}.xml") && (Time.now - File.atime("#{Dir.tmpdir}/chef-rundeck-#{project}.xml") < ChefRundeck.cache_timeout)) then 
-        return "#{Dir.tmpdir}/chef-rundeck-#{project}.xml"
-      end
 
       results = []
       keys = { 'name' => ['name'],

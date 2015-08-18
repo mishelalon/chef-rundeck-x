@@ -81,13 +81,6 @@ class ChefRundeckCLI
      :long => "--env ENV",
      :description => "Sets the environment for chef-rundeck to execute under. Use 'development' for more logging.",
      :default => "production"
-
-   option :cache_timeout,
-     :short => "-t CACHE_TIMEOUT",
-     :long => "--timeout CACHE_TIMEOUT",
-     :description => "Sets the response timeout in seconds for the query data.",
-     :default => "30"
-
 end
 
 cli = ChefRundeckCLI.new
@@ -100,7 +93,6 @@ ChefRundeck.api_url = cli.config[:api_url]
 ChefRundeck.client_key = cli.config[:client_key]
 ChefRundeck.project_config = cli.config[:project_config]
 ChefRundeck.environment = cli.config[:env].to_sym
-ChefRundeck.cache_timeout = cli.config[:cache_timeout].to_i
 ChefRundeck.configure
 
 begin
