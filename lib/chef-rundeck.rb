@@ -62,11 +62,11 @@ class Node < Hash
   end
 
   def update(other_hash)
-    if other_hash.has_key? 'roles'
+    if other_hash.has_key? 'roles' && ! other_hash['roles'].nil?
       other_hash['roles'] = other_hash['roles'].join(',')
     end
 
-    if other_hash.has_key? 'tags'
+    if other_hash.has_key? 'tags' && ! other_hash['roles'].nil?
       other_hash['tags'] = other_hash['tags'].join(',')
     end
 
