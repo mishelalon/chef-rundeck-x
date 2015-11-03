@@ -62,22 +62,6 @@ class ChefRundeck < Sinatra::Base
         ChefRundeck.client_key = Chef::Config[:client_key]
       end
 
-
-      if (File.exists?(ChefRundeck.project_config)) then
-        Chef::Log.info("Using JSON project file #{ChefRundeck.project_config}")
-        projects = File.open(ChefRundeck.project_config, "r") { |f| JSON.parse(f.read) }
-        projects.keys.each do | project |
-          get "/#{project}" do
-            content_type 'text/xml'
-            Chef::Log.info("Loading nodes for /#{project}")
-            # TODO: Validate project data before rendering the document?
-            send_file build_project project, projects[project]['pattern'], (projects[project]['username'].nil? ? ChefRundeck.username : projects[project]['username']), (projects[project]['hostname'].nil? ? "fqdn" : projects[project]['hostname']), projects[project]['attributes']
-          end
-          cache_file = "#{Dir.tmpdir}/chef-rundeck-#{project}.xml"
-          at_exit { File.delete(cache_file) if File.exist?(cache_file) }
-        end
-      end
-
       get '/nodes.json' do
         if ! Set.new(params.keys).subset? Set.new(['name', 'chef_environment', 'roles', 'tags'])
           status 400
