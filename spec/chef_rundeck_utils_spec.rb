@@ -10,8 +10,8 @@ describe Node  do
       'tags' => [ 'tag1', 'tag2']
       })
 
-    expect(n['roles']).to eq('role1,role2')
-    expect(n['tags']).to eq('tag1,tag2')
+    expect(n['roles']).to eq([ 'role1', 'role2'])
+    expect(n['tags']).to eq(['tag1', 'tag2'])
   end
 
   it 'can be compared to a hash' do
@@ -26,6 +26,9 @@ describe Node  do
     expect(n =~ { 'name' => 'server.example' }).to eq(true)
     expect(n =~ { 'name' => 'some_server.example' }).to eq(false)
     expect(n =~ { 'roles' => 'role1' }).to eq(true)
+    expect(n =~ { 'roles' => 'role1,role2' }).to eq(true)
+    expect(n =~ { 'roles' => 'role1,role3' }).to eq(true)
+    expect(n =~ {}).to eq(true)
   end
 
   it 'hash param has multiple values' do
