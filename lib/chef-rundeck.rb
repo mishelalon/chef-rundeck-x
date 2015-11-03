@@ -43,15 +43,29 @@ class Node < Hash
   def =~(other_hash)
     alike = true
     other_hash.each do |k,v|
-      filter = v.split(",")
-      if filter.class == Array
-        value = fetch k
-        alike = filter.select{ |f| Regexp.new(f) =~ value }.length == 1
+      is_csv = (! /([a-zA-Z0-9]+,)+/.match(v).nil?)
+      
+      if is_csv
+        require 'set'
+        filter = Set.new v.split(",")
+        value = if (fetch k).class != Array
+          Set.new [ (fetch k) ]
+        else
+          Set.new (fetch k)
+        end
+
+        alike = ((filter &  value) != Set.new([]))
         if ! alike
           break
         end
       else
-        if (Regexp.new(v) =~ (fetch k)).nil?
+        value = if (fetch k).class == Array
+          (fetch k).join(",")
+        else
+          (fetch k)
+        end
+
+        if (Regexp.new(v) =~ (value)).nil?
           alike = false
           break
         end
@@ -115,15 +129,18 @@ class ChefRundeck < Sinatra::Base
         end
       end
 
-      @@node_cache = []
-
       get '/nodes.json' do
         if ! Set.new(params.keys).subset? Set.new(['name', 'chef_environment', 'roles', 'tags'])
           status 400
           return 
         end
 
-        if @@node_cache.length == 0
+        nodes = if (File.exists?("#{Dir.tmpdir}/chef-rundeck-default.json") && (params['refresh'].nil? || params['refresh'] == "false")) then
+          Chef::Log.info("Loading nodes from cache at #{Dir.tmpdir}/chef-rundeck-default.json")
+          file = File.read("#{Dir.tmpdir}/chef-rundeck-default.json") 
+          require 'json'
+          JSON.parse(file).map{ |n| Node.new.update(n) }
+        else
           keys = {  
                     'name' => ['name'],
                     'chef_environment' => [ 'chef_environment' ],
@@ -133,17 +150,23 @@ class ChefRundeck < Sinatra::Base
                  }  
 
           Chef::Log.info("Loading all nodes")
-          @@node_cache = partial_search(:node, "*:*", :keys => keys )
-          @@node_cache = @@node_cache.map { |n| Node.new().update(n) } 
+          nodes = partial_search(:node, "*:*", :keys => keys ).map{ |n| Node.new.update(n) }
 
-          Chef::Log.info("nodes complete (project: 'default', total: #{@@node_cache.length}, failed: N/A")
+          Chef::Log.info("nodes complete (project: 'default', total: #{nodes.length}, failed: N/A")
           Chef::Log.info("Done loading all nodes")
+
+          File.open("#{Dir.tmpdir}/chef-rundeck-default.json", 'w') do |f|
+            f.write(nodes.to_json)
+            f.close
+          end
+
+          nodes
         end
 
         content_type 'application/json'
         status 200
 
-        return @@node_cache.select{ |node| node =~ params }.map{ |n| n['name'] }.to_json
+        return nodes.select{ |node| node =~ params }.map{ |n| n['name'] }.to_json
       end
 
       get '/nodes.xml' do
