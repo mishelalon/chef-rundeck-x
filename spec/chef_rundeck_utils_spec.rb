@@ -29,16 +29,6 @@ describe Node  do
     expect(n =~ { 'roles' => 'role1,role2' }).to eq(true)
     expect(n =~ { 'roles' => 'role1,role3' }).to eq(true)
     expect(n =~ {}).to eq(true)
-  end
-
-  it 'hash param has multiple values' do
-    n = Node.new()
-    n.update({
-      'name' => 'server.example.com',
-      'chef_environment' => 'development',
-      'roles' => [ 'role1', 'role2' ]
-      })
-
     expect(n =~ { 'chef_environment' => 'development,staging'}).to eq(true)
   end
 end
