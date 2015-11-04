@@ -119,7 +119,7 @@ class ChefRundeck < Sinatra::Base
     end
   end
 
-  def build_project (project="default", pattern="*:*", username=ChefRundeck.username, hostname="fqdn", custom_attributes=nil)
+  def build_project (project: "default", pattern: "*:*", username: ChefRundeck.username, hostname: "fqdn", custom_attributes: nil)
     response = nil
     begin
 
