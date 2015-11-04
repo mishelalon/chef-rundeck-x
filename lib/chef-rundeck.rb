@@ -49,6 +49,7 @@ class ChefRundeck < Sinatra::Base
     attr_accessor :client_key
     attr_accessor :project_config
     attr_accessor :partial_search
+    attr_accessor :custom_attributes
 
     def configure
       Chef::Config.from_file(ChefRundeck.config_file)
@@ -61,6 +62,12 @@ class ChefRundeck < Sinatra::Base
       unless ChefRundeck.client_key
         ChefRundeck.client_key = Chef::Config[:client_key]
       end
+
+      unless ChefRundeck.custom_attributes.nil?
+        @@custom_attributes = ChefRundeck.custom_attributes.split(",")
+      end
+
+      Chef::Log.info("Checking project config at #{ChefRundeck.project_config}")
 
       get '/nodes.json' do
         if ! Set.new(params.keys).subset? Set.new(['name', 'chef_environment', 'roles', 'tags'])
@@ -110,7 +117,7 @@ class ChefRundeck < Sinatra::Base
           Chef::Log.info("Loading from cache")
           send_file "#{Dir.tmpdir}/chef-rundeck-default.xml"
         else
-          send_file build_project
+          send_file build_project custom_attributes: @@custom_attributes
         end
       end
       
