@@ -68,7 +68,7 @@ class ChefRundeck < Sinatra::Base
       end
 
       get '/nodes.json' do
-        if ! Set.new(params.keys).subset? Set.new(['name', 'chef_environment', 'roles', 'tags'])
+        if ! Set.new(params.keys).subset? Set.new(['name', 'chef_environment', 'roles', 'tags', @@custom_attributes.map{ |attr| attr.gsub('.', '_') } ].flatten)
           status 400
           return 
         end
@@ -86,6 +86,14 @@ class ChefRundeck < Sinatra::Base
                     'roles' => [ 'roles' ],
                     'tags' => [ 'tags' ]
                  }  
+
+          if !@@custom_attributes.nil? then
+            @@custom_attributes.each do |attr|
+            attr_name = attr.gsub('.', '_')
+            attr_value = attr.split('.')
+            keys[attr_name] = attr_value
+            end
+          end
 
           Chef::Log.info("Loading all nodes")
           nodes = partial_search(:node, "*:*", :keys => keys ).map{ |n| Node.new.update(n) }
