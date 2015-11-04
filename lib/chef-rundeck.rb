@@ -26,6 +26,7 @@ require 'chef/data_bag_item'
 require 'partial_search'
 require 'set'
 require 'chef-rundeck/node'
+require 'json'
 
 REQUIRED_ATTRS = [ :kernel, :fqdn, :platform, :platform_version ]
 
@@ -67,6 +68,21 @@ class ChefRundeck < Sinatra::Base
         @@custom_attributes = ChefRundeck.custom_attributes.split(",")
       end
 
+      if (File.exists?(ChefRundeck.project_config))
+        config = File.open(ChefRundeck.project_config) { |f| JSON.parse(f.read) }
+        if config.has_key? "options"
+          config['options'].each do |name, values|
+            get "/option/#{name}" do
+              if !params['k'].nil?
+                return values.fetch(params['k'],[]).to_json
+              else
+                status 400
+              end
+            end
+          end
+        end
+      end
+
       get '/nodes.json' do
         if ! Set.new(params.keys).subset? Set.new(['name', 'chef_environment', 'roles', 'tags', @@custom_attributes.map{ |attr| attr.gsub('.', '_') } ].flatten)
           status 400
@@ -76,7 +92,6 @@ class ChefRundeck < Sinatra::Base
         nodes = if (File.exists?("#{Dir.tmpdir}/chef-rundeck-default.json") && (params['refresh'].nil? || params['refresh'] == "false")) then
           Chef::Log.info("Loading nodes from cache at #{Dir.tmpdir}/chef-rundeck-default.json")
           file = File.read("#{Dir.tmpdir}/chef-rundeck-default.json") 
-          require 'json'
           JSON.parse(file).map{ |n| Node.new.update(n) }
         else
           keys = {  
