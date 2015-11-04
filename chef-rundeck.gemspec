@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
     "Rakefile",
     "bin/chef-rundeck",
     "lib/chef-rundeck.rb",
-    "lib/node.rb"
+    "lib/node.rb",
     "lib/partial_search.rb",
     "spec/chef-rundeck_spec.rb",
     "spec/spec.opts",
