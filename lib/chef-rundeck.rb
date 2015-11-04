@@ -67,8 +67,6 @@ class ChefRundeck < Sinatra::Base
         @@custom_attributes = ChefRundeck.custom_attributes.split(",")
       end
 
-      Chef::Log.info("Checking project config at #{ChefRundeck.project_config}")
-
       get '/nodes.json' do
         if ! Set.new(params.keys).subset? Set.new(['name', 'chef_environment', 'roles', 'tags'])
           status 400
