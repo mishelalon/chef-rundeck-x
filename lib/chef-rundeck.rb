@@ -74,6 +74,7 @@ class ChefRundeck < Sinatra::Base
           config['options'].each do |name, values|
             get "/option/#{name}" do
               if !params['k'].nil?
+                content_type 'application/json'
                 return values.fetch(params['k'], values.fetch('default',[])).to_json
               else
                 status 400
