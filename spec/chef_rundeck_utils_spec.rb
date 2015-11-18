@@ -1,8 +1,8 @@
-require 'chef-rundeck'
+require 'chef-rundeck/node'
 
-describe Node  do
+describe ChefRundeckX::Node  do
   it 'converts array to string in update' do
-    n = Node.new()
+    n = ChefRundeckX::Node.new()
     n.update({
       'name' => 'server.example.com', 
       'chef_environment' => 'development',
@@ -15,7 +15,7 @@ describe Node  do
   end
 
   it 'can be compared to a hash' do
-    n = Node.new()
+    n = ChefRundeckX::Node.new()
     n.update({
       'name' => 'server.example.com',
       'chef_environment' => 'development',

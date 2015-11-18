@@ -91,7 +91,7 @@ class ChefRundeck < Sinatra::Base
         nodes = if (File.exists?("#{Dir.tmpdir}/chef-rundeck-default.json") && (params['refresh'].nil? || params['refresh'] == "false")) then
           Chef::Log.info("Loading nodes from cache at #{Dir.tmpdir}/chef-rundeck-default.json")
           file = File.read("#{Dir.tmpdir}/chef-rundeck-default.json") 
-          JSON.parse(file).map{ |n| Node.new.update(n) }
+          JSON.parse(file).map{ |n| ChefRundeckX::Node.new.update(n) }
         else
           keys = {  
                     'name' => ['name'],
@@ -110,7 +110,7 @@ class ChefRundeck < Sinatra::Base
           end
 
           Chef::Log.info("Loading all nodes")
-          nodes = partial_search(:node, "*:*", :keys => keys ).map{ |n| Node.new.update(n) }
+          nodes = partial_search(:node, "*:*", :keys => keys ).map{ |n| ChefRundeckX::Node.new.update(n) }
 
           Chef::Log.info("nodes complete (project: 'default', total: #{nodes.length}, failed: N/A")
           Chef::Log.info("Done loading all nodes")
