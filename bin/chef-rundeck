@@ -86,7 +86,7 @@ class ChefRundeckCLI
      :short => "-t CUSTOM_ATTRIBUTES",
      :long => "--custom_attributes CUSTOM_ATTRIBUTES",
      :description => "Include more node attributes from chef",
-     :default => nil
+     :default => ""
 end
 
 cli = ChefRundeckCLI.new

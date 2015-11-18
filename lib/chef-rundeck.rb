@@ -64,9 +64,7 @@ class ChefRundeck < Sinatra::Base
         ChefRundeck.client_key = Chef::Config[:client_key]
       end
 
-      unless ChefRundeck.custom_attributes.nil?
-        @@custom_attributes = ChefRundeck.custom_attributes.split(",")
-      end
+      @@custom_attributes = ChefRundeck.custom_attributes.split(",")
 
       if (File.exists?(ChefRundeck.project_config))
         config = File.open(ChefRundeck.project_config) { |f| JSON.parse(f.read) }
