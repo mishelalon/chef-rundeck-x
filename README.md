@@ -1,9 +1,4 @@
 # chef-rundeck
-[![Gem Version](https://badge.fury.io/rb/chef-rundeck.png)](http://badge.fury.io/rb/chef-rundeck)
-[![Build Status](https://secure.travis-ci.org/oswaldlabs/chef-rundeck.png?branch=master)](http://travis-ci.org/oswaldlabs/chef-rundeck)
-[![Dependency Status](https://gemnasium.com/oswaldlabs/chef-rundeck.png?travis)](https://gemnasium.com/oswaldlabs/chef-rundeck)
-[![Code Climate](https://codeclimate.com/github/oswaldlabs/chef-rundeck.png)](https://codeclimate.com/github/oswaldlabs/chef-rundeck)
-
 A simple Sinatra app that presents matching node results of a Chef search formatted as a RunDeck resource list.
 
 ## Usage
